@@ -1,20 +1,17 @@
 [phases.setup]
-nixPkgs = [
-  "python312",
-  "gcc",
-  "cairo",
-  "pango",
-  "gdk-pixbuf",
-  "glib",
-  "libffi",
-  "pkg-config",
-  "dejavu_fonts"
+aptPkgs = [
+  "libcairo2",
+  "libpango-1.0-0",
+  "libpangocairo-1.0-0",
+  "libgdk-pixbuf-2.0-0",
+  "libffi-dev",
+  "shared-mime-info",
+  "fonts-dejavu-core",
+  "build-essential"
 ]
 
 [phases.install]
 cmds = [
-  "python -m venv --copies /opt/venv",
-  ". /opt/venv/bin/activate",
   "pip install -r requirements.txt"
 ]
 
