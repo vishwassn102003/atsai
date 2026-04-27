@@ -17,7 +17,6 @@ def create_app():
     app.register_blueprint(main_bp)
     app.register_blueprint(api_bp, url_prefix='/api')
 
-    if os.getenv("RAILWAY_ENVIRONMENT") != "production":
     with app.app_context():
         db.create_all()
 
