@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — ResumeAI</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090e;--bg2:#0f0f17;--bg3:#161622;--bg4:#1d1d2c;
+  --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.11);
+  --text:#f0eeff;--text2:#9896ae;--text3:#55536a;
+  --gold:#c6a76d;--gold2:#dfc28e;
+  --green:#4ade80;--red:#f87171;--orange:#fb923c;
+  --fd:'DM Serif Display',Georgia,serif;
+  --fb:'Inter',system-ui,sans-serif;
+  --fm:'IBM Plex Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;min-height:100vh}
+
+/* TOPBAR */
+.topbar{height:56px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.lbox{width:24px;height:24px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:5px;display:grid;place-items:center;font-weight:700;font-size:11px;color:#09090e}
+.ltxt{font-family:var(--fd);font-size:17px;color:var(--text)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.user-info{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--text2)}
+.user-avatar{width:30px;height:30px;border-radius:50%;border:1px solid var(--border2)}
+.btn-sm{font-family:var(--fb);font-size:12.5px;color:var(--text2);text-decoration:none;padding:6px 13px;border:1px solid var(--border2);border-radius:6px;transition:all .2s}
+.btn-sm:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
+.btn-primary{font-family:var(--fb);font-size:13px;font-weight:600;color:#09090e;background:linear-gradient(135deg,var(--gold),var(--gold2));padding:8px 18px;border-radius:7px;text-decoration:none;transition:all .2s}
+.btn-primary:hover{opacity:.88;transform:translateY(-1px)}
+
+/* PAGE */
+.page{max-width:960px;margin:0 auto;padding:48px 24px 80px}
+
+/* WELCOME */
+.welcome{margin-bottom:40px}
+.welcome h1{font-family:var(--fd);font-size:30px;font-weight:400;color:var(--text);margin-bottom:4px;letter-spacing:-.02em}
+.welcome p{font-size:14px;color:var(--text2);font-weight:300}
+
+/* SUBSCRIPTION CARD */
+.sub-card{border-radius:14px;padding:24px 28px;margin-bottom:32px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.sub-card.active{background:linear-gradient(135deg,rgba(74,222,128,.08),rgba(74,222,128,.03));border:1px solid rgba(74,222,128,.2)}
+.sub-card.inactive{background:linear-gradient(135deg,rgba(198,167,109,.08),rgba(198,167,109,.03));border:1px solid rgba(198,167,109,.2)}
+.sub-left h3{font-size:16px;font-weight:600;color:var(--text);margin-bottom:4px}
+.sub-left p{font-size:13px;color:var(--text2);font-weight:300}
+.sub-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--fm);font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;padding:4px 12px;border-radius:100px;margin-bottom:8px}
+.sub-badge.active{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);color:var(--green)}
+.sub-badge.inactive{background:rgba(198,167,109,.1);border:1px solid rgba(198,167,109,.25);color:var(--gold)}
+.sbdot{width:5px;height:5px;background:currentColor;border-radius:50%;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.edit-meter{display:flex;align-items:center;gap:10px;margin-top:10px}
+.meter-bar{flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;max-width:200px}
+.meter-fill{height:100%;background:linear-gradient(90deg,var(--green),#22d37a);border-radius:3px;transition:width .5s ease}
+.meter-txt{font-family:var(--fm);font-size:11px;color:var(--text2)}
+
+/* SECTION */
+.sec-title{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);font-family:var(--fm);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+
+/* RESUME CARDS */
+.resume-grid{display:flex;flex-direction:column;gap:12px;margin-bottom:40px}
+.rcard{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 22px;display:flex;align-items:center;gap:16px;transition:border-color .2s}
+.rcard:hover{border-color:rgba(198,167,109,.22)}
+.rcard-icon{width:42px;height:42px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;display:grid;place-items:center;font-size:18px;flex-shrink:0}
+.rcard-info{flex:1;min-width:0}
+.rcard-name{font-size:14px;font-weight:500;color:var(--text);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rcard-meta{font-family:var(--fm);font-size:11px;color:var(--text3);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.rcard-score{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:3px 10px;border-radius:100px}
+.rcard-score.high{background:rgba(74,222,128,.1);color:var(--green)}
+.rcard-score.mid{background:rgba(251,146,60,.1);color:var(--orange)}
+.rcard-score.low{background:rgba(248,113,113,.1);color:var(--red)}
+.rcard-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.btn-edit-card{font-family:var(--fb);font-size:12.5px;font-weight:500;color:#09090e;background:linear-gradient(135deg,var(--gold),var(--gold2));padding:7px 16px;border-radius:6px;text-decoration:none;transition:all .2s}
+.btn-edit-card:hover{opacity:.88}
+.btn-dl-card{font-family:var(--fb);font-size:12.5px;color:var(--text2);padding:7px 13px;border:1px solid var(--border2);border-radius:6px;text-decoration:none;transition:all .2s;cursor:pointer;background:none}
+.btn-dl-card:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
+
+.empty-state{background:var(--bg2);border:1px dashed var(--border2);border-radius:12px;padding:48px 24px;text-align:center;margin-bottom:40px}
+.empty-icon{font-size:36px;margin-bottom:12px;opacity:.5}
+.empty-title{font-size:16px;font-weight:500;color:var(--text);margin-bottom:6px}
+.empty-sub{font-size:13px;color:var(--text2);font-weight:300;margin-bottom:20px}
+
+/* PAYMENT HISTORY */
+.pay-list{display:flex;flex-direction:column;gap:10px}
+.pcard{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px 20px;display:flex;align-items:center;gap:14px}
+.pcard-icon{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:14px;flex-shrink:0}
+.pcard-icon.paid{background:rgba(74,222,128,.1)}
+.pcard-icon.pending{background:rgba(251,146,60,.1)}
+.pcard-info{flex:1}
+.pcard-title{font-size:13.5px;font-weight:500;color:var(--text);margin-bottom:2px}
+.pcard-meta{font-family:var(--fm);font-size:11px;color:var(--text3)}
+.pcard-amount{font-family:var(--fd);font-size:18px;font-weight:400;color:var(--gold);font-style:italic}
+.pcard-status{font-family:var(--fm);font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;padding:3px 9px;border-radius:100px}
+.pcard-status.paid{background:rgba(74,222,128,.1);color:var(--green)}
+.pcard-status.pending{background:rgba(251,146,60,.1);color:var(--orange)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/" class="logo"><div class="lbox">R</div><span class="ltxt">ResumeAI</span></a>
+  <div class="topbar-right">
+    <div class="user-info">
+      {% if current_user.avatar %}
+      <img class="user-avatar" src="{{ current_user.avatar }}" alt="avatar">
+      {% endif %}
+      {{ current_user.name or current_user.email }}
+    </div>
+    <a href="/checker" class="btn-primary">+ New ATS Check</a>
+    <a href="/logout" class="btn-sm">Sign out</a>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- WELCOME -->
+  <div class="welcome">
+    <h1>Welcome back{% if current_user.name %}, {{ current_user.name.split()[0] }}{% endif %}</h1>
+    <p>Your resume dashboard — check scores, edit, and download</p>
+  </div>
+
+  <!-- SUBSCRIPTION STATUS -->
+  {% if sub %}
+  <div class="sub-card active">
+    <div class="sub-left">
+      <div class="sub-badge active"><div class="sbdot"></div>Active Subscription</div>
+      <h3>Full Access Unlocked</h3>
+      <p>Expires {{ sub.expires_at.strftime('%d %b %Y') }} &nbsp;·&nbsp; {{ edits_remaining }} edits remaining</p>
+      <div class="edit-meter">
+        <div class="meter-bar">
+          <div class="meter-fill" style="width:{{ (edits_remaining / 25 * 100)|int }}%"></div>
+        </div>
+        <div class="meter-txt">{{ edits_remaining }}/25 edits left</div>
+      </div>
+    </div>
+    <a href="/checker" class="btn-primary">+ New ATS Check</a>
+  </div>
+  {% else %}
+  <div class="sub-card inactive">
+    <div class="sub-left">
+      <div class="sub-badge inactive"><div class="sbdot"></div>Free Plan</div>
+      <h3>ATS Check is Free</h3>
+      <p>Pay ₹29 to unlock AI rewrite, editing, and PDF download</p>
+    </div>
+    <a href="/checker" class="btn-primary">Check my ATS Score →</a>
+  </div>
+  {% endif %}
+
+  <!-- RESUMES -->
+  <div class="sec-title">
+    My Resumes
+    <a href="/checker" style="font-family:var(--fb);font-size:12px;font-weight:500;color:var(--gold);text-decoration:none;letter-spacing:0">+ New check</a>
+  </div>
+
+  {% if resumes %}
+  <div class="resume-grid">
+    {% for r in resumes %}
+    {% set score = r.improved_score or r.ats_score or 0 %}
+    {% set score_class = 'high' if score >= 70 else ('mid' if score >= 50 else 'low') %}
+    <div class="rcard">
+      <div class="rcard-icon">📄</div>
+      <div class="rcard-info">
+        <div class="rcard-name">{{ r.filename or 'Resume #' + r.id|string }}</div>
+        <div class="rcard-meta">
+          <span>{{ r.updated_at.strftime('%d %b %Y') }}</span>
+          <span>{{ 'With JD' if r.mode == 'with_jd' else 'General ATS' }}</span>
+          {% if r.ats_score %}
+          <span class="rcard-score {{ score_class }}">
+            ATS {{ score }}%
+          </span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="rcard-actions">
+        <a href="/editor/{{ r.id }}" class="btn-edit-card">Edit →</a>
+        <button class="btn-dl-card" onclick="downloadResume({{ r.id }})">⬇ PDF</button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">📋</div>
+    <div class="empty-title">No resumes yet</div>
+    <div class="empty-sub">Upload your resume and get your ATS score — completely free</div>
+    <a href="/checker" class="btn-primary">Check my ATS Score →</a>
+  </div>
+  {% endif %}
+
+  <!-- PAYMENT HISTORY -->
+  {% if payments %}
+  <div class="sec-title">Payment History</div>
+  <div class="pay-list">
+    {% for p in payments %}
+    <div class="pcard">
+      <div class="pcard-icon {{ p.status }}">{{ '✅' if p.status == 'paid' else '⏳' }}</div>
+      <div class="pcard-info">
+        <div class="pcard-title">Resume AI Full Access — 30 Days</div>
+        <div class="pcard-meta">
+          {{ p.created_at.strftime('%d %b %Y, %H:%M') }}
+          {% if p.razorpay_payment %} · {{ p.razorpay_payment }}{% endif %}
+        </div>
+      </div>
+      <div class="pcard-amount">₹{{ (p.amount_paise // 100) }}</div>
+      <div class="pcard-status {{ p.status }}">{{ p.status }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</div>
+
+<script>
+async function downloadResume(resumeId){
+  const r = await fetch(`/api/download-pdf/${resumeId}`);
+  if(r.status === 402){
+    alert('Please pay ₹29 to download your resume PDF. Click "Edit →" to open the editor and pay.');
+    return;
+  }
+  if(!r.ok){
+    const d = await r.json();
+    alert(d.error || 'Download failed');
+    return;
+  }
+  const blob = await r.blob();
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'ATS_Resume.pdf';
+  a.click(); URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>

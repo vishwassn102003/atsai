@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATS Checker — ResumeAI</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090e;--bg2:#0f0f17;--bg3:#161622;--bg4:#1e1e2c;
+  --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.11);
+  --text:#f0eeff;--text2:#9896ae;--text3:#55536a;
+  --gold:#c6a76d;--gold2:#dfc28e;
+  --red:#f87171;--green:#4ade80;--orange:#fb923c;
+  --fd:'DM Serif Display',Georgia,serif;
+  --fb:'Inter',system-ui,sans-serif;
+  --fm:'IBM Plex Mono',monospace;
+}
+html,body{height:100%;-webkit-font-smoothing:antialiased}
+body{font-family:var(--fb);background:var(--bg);color:var(--text);overflow-x:hidden}
+
+/* TOPBAR */
+.topbar{height:56px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.lbox{width:24px;height:24px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:5px;display:grid;place-items:center;font-weight:700;font-size:11px;color:#09090e}
+.ltxt{font-family:var(--fd);font-size:17px;color:var(--text)}
+.topbar-right{display:flex;align-items:center;gap:14px}
+.sub-badge{font-family:var(--fm);font-size:10.5px;padding:4px 12px;border-radius:100px;display:flex;align-items:center;gap:6px}
+.sub-badge.active{background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);color:var(--green)}
+.sub-badge.inactive{background:rgba(198,167,109,.08);border:1px solid rgba(198,167,109,.2);color:var(--gold)}
+.sbdot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.btn-dash{font-family:var(--fb);font-size:12.5px;color:var(--text2);text-decoration:none;padding:6px 14px;border:1px solid var(--border2);border-radius:6px;transition:all .2s}
+.btn-dash:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
+
+/* PAGE */
+.page{max-width:860px;margin:0 auto;padding:48px 24px 80px}
+.page-title{font-family:var(--fd);font-size:34px;font-weight:400;color:var(--text);margin-bottom:6px;letter-spacing:-.02em}
+.page-sub{font-size:14px;font-weight:300;color:var(--text2);margin-bottom:36px}
+
+/* MODE TOGGLE */
+.mode-wrap{display:flex;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:32px;width:fit-content;gap:4px}
+.mode-btn{font-family:var(--fb);font-size:13px;font-weight:500;padding:9px 20px;border-radius:7px;border:none;cursor:pointer;transition:all .2s;color:var(--text2);background:transparent}
+.mode-btn.active{background:var(--bg4);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+
+/* UPLOAD FORM */
+.form-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:32px;margin-bottom:28px}
+.fc-title{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);font-family:var(--fm);margin-bottom:20px}
+.upload-zone{border:2px dashed var(--border2);border-radius:10px;padding:40px 24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg3);position:relative}
+.upload-zone:hover,.upload-zone.drag{border-color:rgba(198,167,109,.4);background:rgba(198,167,109,.04)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.uz-ico{font-size:32px;margin-bottom:12px}
+.uz-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px}
+.uz-sub{font-size:12px;color:var(--text3);font-family:var(--fm)}
+.uz-file{display:none;align-items:center;gap:10px;background:rgba(198,167,109,.08);border:1px solid rgba(198,167,109,.2);border-radius:8px;padding:10px 14px;margin-top:14px;font-size:13px;color:var(--gold)}
+.uz-file.show{display:flex}
+
+label{font-size:12px;font-weight:500;color:var(--text2);display:block;margin-bottom:5px;letter-spacing:.01em}
+textarea{width:100%;font-family:var(--fb);font-size:13px;color:var(--text);background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 14px;outline:none;transition:border-color .2s;resize:vertical;min-height:130px;line-height:1.55}
+textarea::placeholder{color:var(--text3)}
+textarea:focus{border-color:rgba(198,167,109,.4)}
+
+.btn-check{width:100%;font-family:var(--fb);font-size:15px;font-weight:600;color:#09090e;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:9px;padding:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;transition:all .2s;margin-top:20px}
+.btn-check:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(198,167,109,.28)}
+.btn-check:disabled{background:var(--bg3);color:var(--text3);cursor:not-allowed;transform:none;box-shadow:none}
+.spin{width:16px;height:16px;border:2px solid rgba(9,9,14,.2);border-top-color:#09090e;border-radius:50%;animation:spin .7s linear infinite;display:none}
+.spin.on{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ══════ RESULTS ══════ */
+#results{display:none}
+
+/* SCORE RING */
+.score-section{text-align:center;padding:48px 24px 36px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;margin-bottom:20px;position:relative;overflow:hidden}
+.score-ring-wrap{position:relative;width:180px;height:180px;margin:0 auto 20px}
+.score-ring-wrap svg{transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--bg3);stroke-width:12}
+.ring-fill{fill:none;stroke-width:12;stroke-linecap:round;transition:stroke-dasharray 1.5s cubic-bezier(.4,0,.2,1)}
+.ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-num{font-family:var(--fd);font-size:42px;font-weight:400;font-style:italic;line-height:1;color:var(--text)}
+.ring-pct{font-size:14px;color:var(--text2);margin-top:2px}
+.score-verdict{font-family:var(--fd);font-size:22px;font-weight:400;color:var(--text);margin-bottom:6px}
+.score-msg{font-size:14px;font-weight:300;color:var(--text2);max-width:440px;margin:0 auto}
+
+/* TEAR ANIMATION */
+.tear-overlay{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;flex-direction:column}
+.tear-overlay.show{display:flex}
+.tear-paper{width:280px;height:360px;background:white;border-radius:4px;position:relative;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;font-size:12px;color:#333;padding:24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.tear-paper .lines{width:100%;display:flex;flex-direction:column;gap:8px}
+.tear-paper .line{height:8px;background:#e5e5e5;border-radius:4px}
+.tear-paper .line.short{width:60%}
+.tear-paper .line.med{width:80%}
+.tear-anim{animation:tearAnim 2.5s ease forwards}
+.tear-msg{color:white;font-family:'DM Serif Display',serif;font-size:28px;font-style:italic;text-align:center;margin-top:28px;opacity:0;animation:fadeIn .5s 2s ease forwards}
+.tear-sub{color:rgba(255,255,255,.6);font-size:14px;text-align:center;margin-top:8px;opacity:0;animation:fadeIn .5s 2.3s ease forwards}
+.tear-btn{margin-top:28px;opacity:0;animation:fadeIn .5s 2.5s ease forwards}
+.tear-btn button{font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#09090e;background:linear-gradient(135deg,#c6a76d,#dfc28e);border:none;border-radius:9px;padding:13px 32px;cursor:pointer;transition:all .2s}
+.tear-btn button:hover{transform:translateY(-1px)}
+@keyframes tearAnim{
+  0%{transform:translateY(0) rotate(0);clip-path:none;opacity:1}
+  30%{transform:translateY(0) rotate(-2deg);clip-path:none}
+  50%{transform:translateY(0) rotate(3deg)}
+  70%{transform:translateY(20px) rotate(-5deg);clip-path:polygon(0 0,100% 0,100% 55%,50% 60%,0 55%);opacity:1}
+  85%{transform:translateY(60px) rotate(8deg);clip-path:polygon(0 0,100% 0,100% 30%,50% 38%,0 30%);opacity:.6}
+  100%{transform:translateY(200px) rotate(-10deg);clip-path:polygon(0 0,100% 0,100% 0%,50% 5%,0 0%);opacity:0}
+}
+@keyframes fadeIn{to{opacity:1}}
+
+/* BREAKDOWN */
+.breakdown-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.bcard{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:18px 20px}
+.bcard-label{font-size:11.5px;font-weight:500;color:var(--text2);margin-bottom:10px;font-family:var(--fm);text-transform:uppercase;letter-spacing:.06em}
+.bcard-bar{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-bottom:8px}
+.bcard-fill{height:100%;border-radius:3px;transition:width 1s ease}
+.bcard-score{font-family:var(--fd);font-size:22px;font-weight:400;font-style:italic;color:var(--text)}
+
+/* KEYWORDS */
+.kw-card{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:20px;margin-bottom:14px}
+.kw-title{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);font-family:var(--fm);margin-bottom:14px}
+.kw-tags{display:flex;flex-wrap:wrap;gap:8px}
+.kw-tag{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);color:var(--red);font-size:12px;font-weight:500;padding:4px 11px;border-radius:100px;font-family:var(--fm)}
+
+/* SUGGESTIONS */
+.sug-card{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:20px;margin-bottom:20px}
+.sug-title{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);font-family:var(--fm);margin-bottom:14px}
+.sug-list{display:flex;flex-direction:column;gap:10px}
+.sug-item{display:flex;align-items:flex-start;gap:11px;font-size:13.5px;color:var(--text2);line-height:1.6}
+.sug-num{width:22px;height:22px;background:rgba(198,167,109,.1);border:1px solid rgba(198,167,109,.2);border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:600;color:var(--gold);flex-shrink:0;margin-top:2px}
+
+/* UPGRADE BANNER */
+.upgrade-banner{background:linear-gradient(135deg,rgba(198,167,109,.1),rgba(198,167,109,.05));border:1px solid rgba(198,167,109,.3);border-radius:14px;padding:28px 32px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:20px}
+.ub-left h3{font-family:var(--fd);font-size:22px;color:var(--text);margin-bottom:4px}
+.ub-left p{font-size:13.5px;color:var(--text2);font-weight:300}
+.btn-upgrade{font-family:var(--fb);font-size:14px;font-weight:600;color:#09090e;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:9px;padding:12px 28px;cursor:pointer;white-space:nowrap;transition:all .2s}
+.btn-upgrade:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(198,167,109,.3)}
+
+.already-sub{background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.2);border-radius:11px;padding:16px 20px;display:flex;align-items:center;gap:12px;font-size:13.5px;color:var(--green);margin-bottom:20px}
+.btn-edit{font-family:var(--fb);font-size:14px;font-weight:600;color:#09090e;background:linear-gradient(135deg,var(--green),#22d37a);border:none;border-radius:9px;padding:12px 28px;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn-edit:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(74,222,128,.25)}
+
+/* PAYMENT MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:500}
+.overlay.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:40px;max-width:400px;width:90%;text-align:center}
+.mbadge{display:inline-block;font-family:var(--fm);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:4px 12px;border-radius:100px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#09090e;margin-bottom:16px;font-weight:600}
+.modal h2{font-family:var(--fd);font-size:26px;color:var(--text);margin-bottom:8px}
+.modal p{font-size:13.5px;color:var(--text2);font-weight:300;line-height:1.65;margin-bottom:20px}
+.mprice{font-family:var(--fd);font-size:52px;font-weight:400;color:transparent;background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;background-clip:text;line-height:1;font-style:italic}
+.mprice sup{font-size:22px;vertical-align:top;margin-top:10px;font-family:var(--fb)}
+.mpsub{font-family:var(--fm);font-size:11px;color:var(--text3);margin:6px 0 22px}
+.mfeats{list-style:none;text-align:left;background:var(--bg3);border-radius:8px;padding:14px;margin-bottom:22px}
+.mf{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text2);padding:5px 0;border-bottom:1px solid var(--border)}
+.mf:last-child{border:none}
+.mfc{color:var(--gold);font-size:11px}
+.btn-pay{width:100%;font-family:var(--fb);font-size:14px;font-weight:600;color:#09090e;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:9px;padding:13px;cursor:pointer;transition:all .2s;margin-bottom:9px}
+.btn-pay:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(198,167,109,.3)}
+.btn-later{background:none;border:none;font-size:13px;color:var(--text3);cursor:pointer;font-family:var(--fb)}
+.btn-later:hover{color:var(--text)}
+.mnote{font-family:var(--fm);font-size:10.5px;color:var(--text3);margin-top:12px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;z-index:999;padding:11px 16px;border-radius:8px;font-size:13px;font-weight:500;display:none;align-items:center;gap:9px;animation:tin .3s ease}
+.toast.show{display:flex}
+.toast.ok{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);color:var(--green)}
+.toast.err{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:var(--red)}
+@keyframes tin{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+@media(max-width:640px){.breakdown-grid{grid-template-columns:1fr}.upgrade-banner{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/" class="logo"><div class="lbox">R</div><span class="ltxt">ResumeAI</span></a>
+  <div class="topbar-right">
+    {% if sub %}
+    <div class="sub-badge active"><div class="sbdot"></div>Active · {{ edits_remaining }} edits left</div>
+    {% else %}
+    <div class="sub-badge inactive"><div class="sbdot"></div>Free plan</div>
+    {% endif %}
+    <a href="/dashboard" class="btn-dash">Dashboard</a>
+  </div>
+</div>
+
+<div class="page">
+  <div class="page-title">Check your ATS Score</div>
+  <div class="page-sub">Upload your resume · Get your score free · Fix it with AI for ₹29</div>
+
+  <!-- MODE TOGGLE -->
+  <div class="mode-wrap">
+    <button class="mode-btn active" id="m-jd" onclick="setMode('with_jd')">📋 With Job Description</button>
+    <button class="mode-btn" id="m-nojd" onclick="setMode('without_jd')">📄 Without Job Description</button>
+  </div>
+
+  <!-- UPLOAD FORM -->
+  <div class="form-card">
+    <div class="fc-title">Upload Resume</div>
+    <div class="upload-zone" id="dropzone">
+      <input type="file" id="file-input" accept=".pdf,.docx,.doc,.txt" onchange="onFile(this)">
+      <div id="uz-default">
+        <div class="uz-ico">📄</div>
+        <div class="uz-title">Drop your resume here or click to browse</div>
+        <div class="uz-sub">PDF · DOCX · TXT · Max 5MB</div>
+      </div>
+      <div class="uz-file" id="uz-file">
+        <span>📎</span><span id="uz-fname"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-card" id="jd-card">
+    <div class="fc-title">Job Description (Optional but recommended)</div>
+    <textarea id="jd-text" placeholder="Paste the full job description here. The more detail you provide, the more accurate your ATS score will be..."></textarea>
+  </div>
+
+  <button class="btn-check" id="check-btn" onclick="checkAts()">
+    <div class="spin" id="spin"></div>
+    <span id="check-txt">⚡ Check my ATS Score — Free</span>
+  </button>
+
+  <!-- RESULTS -->
+  <div id="results">
+
+    <!-- SCORE RING -->
+    <div class="score-section" id="score-section">
+      <div class="score-ring-wrap">
+        <svg width="180" height="180" viewBox="0 0 180 180">
+          <circle class="ring-bg" cx="90" cy="90" r="78"/>
+          <circle class="ring-fill" id="ring-fill" cx="90" cy="90" r="78" stroke="#c6a76d"
+                  stroke-dasharray="0 490" stroke-dashoffset="0"/>
+        </svg>
+        <div class="ring-text">
+          <div class="ring-num" id="ring-num">0%</div>
+          <div class="ring-pct">ATS Score</div>
+        </div>
+      </div>
+      <div class="score-verdict" id="score-verdict">Analysing...</div>
+      <div class="score-msg" id="score-msg"></div>
+    </div>
+
+    <!-- BREAKDOWN -->
+    <div class="breakdown-grid" id="breakdown-grid"></div>
+
+    <!-- MISSING KEYWORDS -->
+    <div class="kw-card" id="kw-card" style="display:none">
+      <div class="kw-title">⚠ Missing Keywords</div>
+      <div class="kw-tags" id="kw-tags"></div>
+    </div>
+
+    <!-- SUGGESTIONS -->
+    <div class="sug-card">
+      <div class="sug-title">💡 Improvement Suggestions</div>
+      <div class="sug-list" id="sug-list"></div>
+    </div>
+
+    <!-- UPGRADE / ALREADY SUBSCRIBED -->
+    <div id="action-section"></div>
+
+  </div>
+</div>
+
+<!-- TEAR ANIMATION -->
+<div class="tear-overlay" id="tear-overlay">
+  <div class="tear-paper" id="tear-paper">
+    <div class="lines">
+      <div class="line"></div><div class="line short"></div>
+      <div class="line med"></div><div class="line"></div>
+      <div class="line short"></div><div class="line med"></div>
+      <div class="line"></div><div class="line short"></div>
+    </div>
+  </div>
+  <div class="tear-msg" id="tear-msg">Your resume needs work! 😬</div>
+  <div class="tear-sub">AI can fix it — for just ₹29</div>
+  <div class="tear-btn"><button onclick="closeTear()">Fix my resume →</button></div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="mbadge">Unlock Full Access</div>
+    <h2>Fix your resume with AI</h2>
+    <p>AI rewrites your resume to score 85+. Edit, customise, and download your PDF.</p>
+    <div class="mprice"><sup>₹</sup>29</div>
+    <div class="mpsub">one-time · 30 days · 25 AI edits · PDF download</div>
+    <ul class="mfeats">
+      <li class="mf"><span class="mfc">✦</span>Full AI resume rewrite</li>
+      <li class="mf"><span class="mfc">✦</span>25 edits over 30 days</li>
+      <li class="mf"><span class="mfc">✦</span>Custom editing tab</li>
+      <li class="mf"><span class="mfc">✦</span>PDF download after editing</li>
+    </ul>
+    <button class="btn-pay" onclick="pay()">Pay ₹29 &amp; Fix Now</button>
+    <button class="btn-later" onclick="closeModal()">Maybe later</button>
+    <div class="mnote">🔒 Secured by Razorpay · UPI · Cards · Net Banking</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+let mode      = 'with_jd';
+let resumeId  = null;
+const CIRC    = 2 * Math.PI * 78;  // circumference
+
+function setMode(m){
+  mode = m;
+  document.getElementById('m-jd').classList.toggle('active',  m==='with_jd');
+  document.getElementById('m-nojd').classList.toggle('active', m==='without_jd');
+  document.getElementById('jd-card').style.display = m==='with_jd' ? 'block' : 'none';
+}
+
+function onFile(inp){
+  const f = inp.files[0];
+  if(!f) return;
+  document.getElementById('uz-default').style.display = 'none';
+  document.getElementById('uz-file').classList.add('show');
+  document.getElementById('uz-fname').textContent = f.name;
+}
+
+// Drag & drop
+const dz = document.getElementById('dropzone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('drag');
+  const fi = document.getElementById('file-input');
+  const dt = new DataTransfer(); dt.items.add(e.dataTransfer.files[0]);
+  fi.files = dt.files; onFile(fi);
+});
+
+async function checkAts(){
+  const file = document.getElementById('file-input').files[0];
+  if(!file){ toast('Please upload your resume file.','err'); return; }
+
+  setBusy(true);
+
+  const fd = new FormData();
+  fd.append('resume', file);
+  fd.append('mode', mode);
+  fd.append('job_description', document.getElementById('jd-text').value);
+
+  try{
+    const r = await fetch('/api/check-ats', { method:'POST', body: fd });
+    const d = await r.json();
+    if(!r.ok) throw new Error(d.error || 'Failed');
+    resumeId = d.resume_id;
+    showResults(d);
+  } catch(e){
+    toast(e.message, 'err');
+  } finally {
+    setBusy(false);
+  }
+}
+
+function showResults(d){
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
+
+  const score = d.score;
+  animateRing(score);
+  setVerdict(score);
+
+  // Breakdown
+  const bg = document.getElementById('breakdown-grid');
+  bg.innerHTML = '';
+  Object.entries(d.breakdown).forEach(([k,v])=>{
+    const label = k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+    const col   = v >= 70 ? '#4ade80' : v >= 40 ? '#fb923c' : '#f87171';
+    bg.innerHTML += `<div class="bcard">
+      <div class="bcard-label">${label}</div>
+      <div class="bcard-bar"><div class="bcard-fill" style="width:${v}%;background:${col}"></div></div>
+      <div class="bcard-score" style="color:${col}">${v}%</div>
+    </div>`;
+  });
+
+  // Missing keywords
+  const kc = document.getElementById('kw-card');
+  const kt = document.getElementById('kw-tags');
+  if(d.missing_keywords && d.missing_keywords.length){
+    kc.style.display = 'block';
+    kt.innerHTML = d.missing_keywords.map(k=>`<span class="kw-tag">${k}</span>`).join('');
+  } else { kc.style.display='none'; }
+
+  // Suggestions
+  const sl = document.getElementById('sug-list');
+  sl.innerHTML = d.suggestions.map((s,i)=>
+    `<div class="sug-item"><div class="sug-num">${i+1}</div><div>${s}</div></div>`
+  ).join('');
+
+  // Action section
+  const as  = document.getElementById('action-section');
+  const hasSub = {{ 'true' if sub else 'false' }};
+  if(hasSub){
+    as.innerHTML = `
+      <div class="already-sub">✅ You have an active subscription · {{ edits_remaining }} edits left</div>
+      <a href="/editor/${resumeId}" class="btn-edit">Open Editor &amp; Improve →</a>`;
+  } else {
+    as.innerHTML = `
+      <div class="upgrade-banner">
+        <div class="ub-left">
+          <h3>${score < 50 ? '🚨 Your resume needs urgent fixing' : '⚡ Improve your score to 85+'}</h3>
+          <p>AI rewrites, custom editor, PDF download — 30 days · 25 edits</p>
+        </div>
+        <button class="btn-upgrade" onclick="openModal()">Fix for ₹29 →</button>
+      </div>`;
+  }
+
+  // Trigger tear animation for low scores
+  if(score < 50){
+    setTimeout(()=> {
+      document.getElementById('tear-overlay').classList.add('show');
+      setTimeout(()=> document.getElementById('tear-paper').classList.add('tear-anim'), 600);
+    }, 800);
+  }
+}
+
+function animateRing(score){
+  const fill  = document.getElementById('ring-fill');
+  const num   = document.getElementById('ring-num');
+  const col   = score >= 70 ? '#4ade80' : score >= 50 ? '#fb923c' : '#f87171';
+  const dash  = (score / 100) * CIRC;
+  fill.setAttribute('stroke', col);
+  fill.setAttribute('stroke-dasharray', `${dash} ${CIRC - dash}`);
+  // Animate number
+  let cur = 0;
+  const step = () => {
+    cur = Math.min(cur + 2, score);
+    num.textContent = cur + '%';
+    num.style.color = col;
+    if(cur < score) requestAnimationFrame(step);
+  };
+  setTimeout(step, 200);
+}
+
+function setVerdict(score){
+  const v = document.getElementById('score-verdict');
+  const m = document.getElementById('score-msg');
+  if(score >= 80){
+    v.textContent = '✅ Excellent ATS Score';
+    m.textContent = 'Your resume is well-optimised. Minor tweaks can push it even higher.';
+  } else if(score >= 60){
+    v.textContent = '⚡ Good — Room to Improve';
+    m.textContent = 'Your resume passes most ATS filters but misses some key keywords and formatting best practices.';
+  } else if(score >= 40){
+    v.textContent = '⚠ Needs Improvement';
+    m.textContent = 'Your resume is being filtered out by many ATS systems. AI can fix this quickly.';
+  } else {
+    v.textContent = '🚨 High Rejection Risk';
+    m.textContent = 'Most ATS systems are auto-rejecting this resume before a human sees it. Fix it now with AI.';
+  }
+}
+
+function closeTear(){ document.getElementById('tear-overlay').classList.remove('show'); openModal(); }
+function openModal(){ document.getElementById('overlay').classList.add('open'); }
+function closeModal(){ document.getElementById('overlay').classList.remove('open'); }
+
+async function pay(){
+  try{
+    const r = await fetch('/api/create-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resume_id:resumeId})});
+    const o = await r.json();
+    if(o.dev){ closeModal(); window.location.href=`/editor/${resumeId}`; return; }
+    if(o.error) throw new Error(o.error);
+    const rzp = new Razorpay({
+      key: o.key, amount: o.amount, currency:'INR',
+      name:'ResumeAI', description:'Resume Fix — 30 Days Access',
+      order_id: o.order_id, theme:{color:'#c6a76d'},
+      handler: async function(resp){
+        const v = await (await fetch('/api/verify-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(resp)})).json();
+        if(v.success){ closeModal(); toast('Payment successful! Opening editor...','ok'); setTimeout(()=>window.location.href=`/editor/${resumeId}`,1000); }
+        else toast('Payment verification failed.','err');
+      }
+    });
+    rzp.open();
+  } catch(e){ toast(e.message,'err'); }
+}
+
+function setBusy(on){
+  const btn = document.getElementById('check-btn');
+  document.getElementById('spin').classList.toggle('on', on);
+  document.getElementById('check-txt').textContent = on ? 'Analysing your resume...' : '⚡ Check my ATS Score — Free';
+  btn.disabled = on;
+}
+
+function toast(msg, type='ok'){
+  const t = document.getElementById('toast');
+  t.textContent=msg; t.className=`toast show ${type}`;
+  setTimeout(()=>t.className='toast',3500);
+}
+</script>
+</body>
+</html>

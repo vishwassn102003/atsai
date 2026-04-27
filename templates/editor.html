@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resume Editor — ResumeAI</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090e;--bg2:#0f0f17;--bg3:#161622;--bg4:#1d1d2c;
+  --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.11);
+  --text:#f0eeff;--text2:#9896ae;--text3:#55536a;
+  --gold:#c6a76d;--gold2:#dfc28e;
+  --green:#4ade80;--red:#f87171;--orange:#fb923c;
+  --fd:'DM Serif Display',Georgia,serif;
+  --fb:'Inter',system-ui,sans-serif;
+  --fm:'IBM Plex Mono',monospace;
+}
+html,body{height:100%;-webkit-font-smoothing:antialiased}
+body{font-family:var(--fb);background:var(--bg);color:var(--text);display:flex;flex-direction:column;overflow:hidden}
+
+/* TOPBAR */
+.topbar{height:54px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0;z-index:50}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.lbox{width:24px;height:24px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:5px;display:grid;place-items:center;font-weight:700;font-size:11px;color:#09090e}
+.ltxt{font-family:var(--fd);font-size:17px;color:var(--text)}
+.topbar-center{display:flex;align-items:center;gap:6px;font-family:var(--fm);font-size:11.5px;color:var(--text3)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.edits-badge{font-family:var(--fm);font-size:10.5px;padding:4px 11px;border-radius:100px;background:rgba(198,167,109,.08);border:1px solid rgba(198,167,109,.2);color:var(--gold)}
+.btn-sm{font-family:var(--fb);font-size:12.5px;color:var(--text2);text-decoration:none;padding:6px 13px;border:1px solid var(--border2);border-radius:6px;transition:all .2s;background:none;cursor:pointer}
+.btn-sm:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:380px 1fr;flex:1;overflow:hidden;height:calc(100vh - 54px)}
+
+/* LEFT PANEL */
+.lpanel{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;position:relative}
+.lpanel-scroll{flex:1;overflow-y:auto;padding:20px 20px 120px;scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
+.lpanel-scroll::-webkit-scrollbar{width:3px}
+.lpanel-scroll::-webkit-scrollbar-thumb{background:var(--border2)}
+
+.panel-title{font-family:var(--fd);font-size:18px;font-weight:400;color:var(--text);margin-bottom:4px}
+.panel-sub{font-size:11.5px;color:var(--text3);font-family:var(--fm);margin-bottom:20px}
+
+/* SCORE COMPARISON */
+.score-compare{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.sco{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.sco-label{font-size:10px;color:var(--text3);font-family:var(--fm);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.sco-num{font-family:var(--fd);font-size:32px;font-weight:400;font-style:italic;line-height:1}
+
+/* TABS */
+.tabs{display:flex;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:3px;margin-bottom:18px;gap:3px}
+.tab{flex:1;font-family:var(--fb);font-size:12.5px;font-weight:500;color:var(--text2);background:transparent;border:none;padding:8px;border-radius:7px;cursor:pointer;transition:all .2s}
+.tab.active{background:var(--bg4);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+
+/* AI IMPROVE SECTION */
+#tab-ai{display:block}
+.btn-ai{width:100%;font-family:var(--fb);font-size:14px;font-weight:600;color:#09090e;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:9px;padding:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;margin-bottom:14px}
+.btn-ai:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(198,167,109,.3)}
+.btn-ai:disabled{background:var(--bg3);color:var(--text3);cursor:not-allowed;transform:none;box-shadow:none}
+.ai-note{font-size:12px;color:var(--text3);line-height:1.6;text-align:center;font-family:var(--fm)}
+
+/* EDIT SECTION */
+#tab-edit{display:none}
+textarea.editor{width:100%;font-family:var(--fm);font-size:12px;color:var(--text);background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;outline:none;resize:none;line-height:1.6;transition:border-color .2s;height:340px}
+textarea.editor:focus{border-color:rgba(198,167,109,.4)}
+.btn-save{width:100%;font-family:var(--fb);font-size:13px;font-weight:600;color:#09090e;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:8px;padding:11px;cursor:pointer;margin-top:10px;transition:all .2s}
+.btn-save:hover{transform:translateY(-1px)}
+.btn-save:disabled{background:var(--bg3);color:var(--text3);cursor:not-allowed;transform:none}
+
+/* SUGGESTIONS */
+.sug-mini{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:14px;margin-bottom:14px}
+.sug-mini-title{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);font-family:var(--fm);margin-bottom:10px}
+.sug-mini-list{display:flex;flex-direction:column;gap:7px}
+.sug-mini-item{font-size:12.5px;color:var(--text2);display:flex;align-items:flex-start;gap:8px;line-height:1.55}
+.sug-dot{width:5px;height:5px;background:var(--gold);border-radius:50%;flex-shrink:0;margin-top:5px}
+
+/* BOTTOM BAR */
+.lpanel-bottom{position:absolute;bottom:0;left:0;right:0;padding:14px 20px 18px;background:linear-gradient(to top,var(--bg2) 72%,transparent)}
+.btn-download{width:100%;font-family:var(--fb);font-size:14px;font-weight:600;border:none;border-radius:9px;padding:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
+.btn-download.locked{background:var(--bg3);color:var(--text2);border:1px solid var(--border2)}
+.btn-download.locked:hover{border-color:rgba(198,167,109,.3);color:var(--gold)}
+.btn-download.unlocked{background:linear-gradient(135deg,var(--green),#22d37a);color:#09090e}
+.btn-download.unlocked:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(74,222,128,.25)}
+
+/* RIGHT PANEL - PAPER PREVIEW */
+.rpanel{background:#0b0b12;display:flex;flex-direction:column;overflow:hidden}
+.rpanel-bar{padding:14px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0}
+.rpanel-label{font-family:var(--fm);font-size:10px;font-weight:500;color:var(--text3);letter-spacing:.1em;text-transform:uppercase}
+.rpanel-scroll{flex:1;overflow-y:auto;padding:28px;scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
+.rpanel-scroll::-webkit-scrollbar{width:3px}
+.rpanel-scroll::-webkit-scrollbar-thumb{background:var(--border2)}
+
+/* PAPER */
+#paper{background:#fff;max-width:680px;margin:0 auto;padding:44px 48px;min-height:840px;box-shadow:0 0 0 1px rgba(255,255,255,.06),0 24px 80px rgba(0,0,0,.65);font-family:'Inter',sans-serif;font-size:13px;line-height:1.6;color:#111;border-radius:4px;white-space:pre-wrap;word-break:break-word}
+
+/* SPIN */
+.spin{width:16px;height:16px;border:2px solid rgba(9,9,14,.2);border-top-color:#09090e;border-radius:50%;animation:spin .7s linear infinite;display:none}
+.spin.on{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* PAYMENT MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;z-index:500}
+.overlay.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:40px;max-width:400px;width:90%;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,.5)}
+.mbadge{display:inline-block;font-family:var(--fm);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:4px 12px;border-radius:100px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#09090e;margin-bottom:16px;font-weight:600}
+.modal h2{font-family:var(--fd);font-size:26px;color:var(--text);margin-bottom:8px}
+.modal p{font-size:13.5px;color:var(--text2);font-weight:300;line-height:1.65;margin-bottom:18px}
+.mprice{font-family:var(--fd);font-size:52px;font-weight:400;color:transparent;background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;background-clip:text;line-height:1;font-style:italic}
+.mprice sup{font-size:22px;vertical-align:top;margin-top:10px;font-family:var(--fb)}
+.mpsub{font-family:var(--fm);font-size:11px;color:var(--text3);margin:6px 0 20px}
+.mfeats{list-style:none;text-align:left;background:var(--bg3);border-radius:8px;padding:14px;margin-bottom:22px}
+.mf{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text2);padding:5px 0;border-bottom:1px solid var(--border)}
+.mf:last-child{border:none}
+.mfc{color:var(--gold);font-size:11px}
+.btn-pay{width:100%;font-family:var(--fb);font-size:14px;font-weight:600;color:#09090e;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:9px;padding:13px;cursor:pointer;transition:all .2s;margin-bottom:9px}
+.btn-pay:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(198,167,109,.3)}
+.btn-later{background:none;border:none;font-size:13px;color:var(--text3);cursor:pointer;font-family:var(--fb)}
+.btn-later:hover{color:var(--text)}
+.mnote{font-family:var(--fm);font-size:10.5px;color:var(--text3);margin-top:12px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;z-index:999;padding:11px 16px;border-radius:8px;font-size:13px;font-weight:500;display:none;align-items:center;gap:9px}
+.toast.show{display:flex}
+.toast.ok{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);color:var(--green)}
+.toast.err{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:var(--red)}
+.toast.info{background:rgba(198,167,109,.1);border:1px solid rgba(198,167,109,.25);color:var(--gold)}
+
+@media(max-width:900px){.layout{grid-template-columns:1fr}.rpanel{display:none}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/" class="logo"><div class="lbox">R</div><span class="ltxt">ResumeAI</span></a>
+  <div class="topbar-center">
+    📄 {{ resume.filename or 'Resume' }}
+    &nbsp;·&nbsp;
+    {% if resume.mode == 'with_jd' %}With JD{% else %}General ATS{% endif %}
+  </div>
+  <div class="topbar-right">
+    {% if sub %}
+    <div class="edits-badge">{{ edits_remaining }} edits left</div>
+    {% endif %}
+    <a href="/checker" class="btn-sm">← New Check</a>
+    <a href="/dashboard" class="btn-sm">Dashboard</a>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- LEFT PANEL -->
+  <div class="lpanel">
+    <div class="lpanel-scroll">
+      <div class="panel-title">Resume Editor</div>
+      <div class="panel-sub">AI improve · manually edit · pay ₹29 to download</div>
+
+      <!-- SCORE COMPARE -->
+      <div class="score-compare">
+        <div class="sco">
+          <div class="sco-label">Original Score</div>
+          <div class="sco-num" id="orig-score"
+            style="color:{% if resume.ats_score >= 70 %}#4ade80{% elif resume.ats_score >= 50 %}#fb923c{% else %}#f87171{% endif %}">
+            {{ resume.ats_score or 0 }}%
+          </div>
+        </div>
+        <div class="sco">
+          <div class="sco-label">Improved Score</div>
+          <div class="sco-num" id="new-score"
+            style="color:{% if resume.improved_score and resume.improved_score >= 70 %}#4ade80{% else %}#9896ae{% endif %}">
+            {% if resume.improved_score %}{{ resume.improved_score }}%{% else %}—{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div class="tabs">
+        <button class="tab active" id="tab-ai-btn" onclick="switchTab('ai')">✨ AI Improve</button>
+        <button class="tab" id="tab-edit-btn" onclick="switchTab('edit')">✏ Manual Edit</button>
+      </div>
+
+      <!-- AI TAB -->
+      <div id="tab-ai">
+        {% if sub %}
+        <button class="btn-ai" id="ai-btn" onclick="aiImprove()">
+          <div class="spin" id="ai-spin"></div>
+          <span id="ai-txt">✨ Rewrite with AI</span>
+        </button>
+        <div class="ai-note">AI rewrites your entire resume for higher ATS score.<br>Uses 1 of your {{ edits_remaining }} remaining edits.</div>
+        {% else %}
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:20px;text-align:center;margin-bottom:14px">
+          <div style="font-size:28px;margin-bottom:10px">🔒</div>
+          <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:6px">Unlock AI Rewrite</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:16px;font-weight:300">Pay ₹29 to unlock AI improvements, editing, and PDF download</div>
+          <button onclick="openModal()" style="font-family:var(--fb);font-size:13px;font-weight:600;color:#09090e;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:8px;padding:11px 24px;cursor:pointer">Unlock for ₹29 →</button>
+        </div>
+        {% endif %}
+
+        <!-- SUGGESTIONS -->
+        <div class="sug-mini">
+          <div class="sug-mini-title">💡 Quick Suggestions</div>
+          <div class="sug-mini-list" id="sug-list">
+            <div class="sug-mini-item"><div class="sug-dot"></div><div style="color:var(--text3);font-style:italic">Run AI improve to see personalised suggestions</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EDIT TAB -->
+      <div id="tab-edit">
+        {% if sub %}
+        <textarea class="editor" id="editor-area" placeholder="Your resume text will appear here after AI improvement...">{{ resume.improved_text or resume.original_text }}</textarea>
+        <button class="btn-save" id="save-btn" onclick="saveEdit()">
+          <div class="spin" id="save-spin"></div>
+          <span id="save-txt">💾 Save Changes</span>
+        </button>
+        {% else %}
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:20px;text-align:center">
+          <div style="font-size:28px;margin-bottom:10px">🔒</div>
+          <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:6px">Unlock Editor</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:16px;font-weight:300">Pay ₹29 to edit and download your resume</div>
+          <button onclick="openModal()" style="font-family:var(--fb);font-size:13px;font-weight:600;color:#09090e;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:8px;padding:11px 24px;cursor:pointer">Unlock for ₹29 →</button>
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <!-- BOTTOM: DOWNLOAD BUTTON -->
+    <div class="lpanel-bottom">
+      {% if can_download %}
+      <button class="btn-download unlocked" onclick="downloadPdf()">
+        ⬇ Download PDF
+      </button>
+      {% else %}
+      <button class="btn-download locked" onclick="openModal()">
+        🔒 Pay ₹29 to Download PDF
+      </button>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL - PREVIEW -->
+  <div class="rpanel">
+    <div class="rpanel-bar">
+      <span class="rpanel-label">Live Preview</span>
+      <span id="preview-status" style="font-family:var(--fm);font-size:11px;color:var(--text3)">Showing current resume</span>
+    </div>
+    <div class="rpanel-scroll">
+      <div id="paper">{{ resume.improved_text or resume.original_text }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="mbadge">Unlock Full Access</div>
+    <h2>Edit &amp; Download your resume</h2>
+    <p>AI rewrite, custom editor, 25 edits, and PDF download — all for 30 days.</p>
+    <div class="mprice"><sup>₹</sup>29</div>
+    <div class="mpsub">one-time · 30 days · 25 AI edits</div>
+    <ul class="mfeats">
+      <li class="mf"><span class="mfc">✦</span>AI full resume rewrite</li>
+      <li class="mf"><span class="mfc">✦</span>25 manual edits over 30 days</li>
+      <li class="mf"><span class="mfc">✦</span>Custom editing tab</li>
+      <li class="mf"><span class="mfc">✦</span>PDF download — unlimited</li>
+    </ul>
+    <button class="btn-pay" onclick="pay()">Pay ₹29 &amp; Unlock Now</button>
+    <button class="btn-later" onclick="closeModal()">Maybe later</button>
+    <div class="mnote">🔒 Secured by Razorpay · UPI · Cards · Net Banking</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+const RESUME_ID = {{ resume.id }};
+
+function switchTab(t){
+  document.getElementById('tab-ai').style.display   = t==='ai'   ? 'block' : 'none';
+  document.getElementById('tab-edit').style.display = t==='edit' ? 'block' : 'none';
+  document.getElementById('tab-ai-btn').classList.toggle('active',  t==='ai');
+  document.getElementById('tab-edit-btn').classList.toggle('active', t==='edit');
+}
+
+// ── AI Improve ────────────────────────────────────────────────────────────────
+async function aiImprove(){
+  const btn = document.getElementById('ai-btn');
+  const sp  = document.getElementById('ai-spin');
+  const txt = document.getElementById('ai-txt');
+  btn.disabled = true; sp.classList.add('on');
+  txt.textContent = 'AI is rewriting...';
+
+  try{
+    const r = await fetch('/api/improve-resume',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({resume_id: RESUME_ID})
+    });
+    const d = await r.json();
+    if(!r.ok) throw new Error(d.error || 'AI improvement failed');
+
+    // Update paper preview
+    document.getElementById('paper').textContent = d.improved;
+
+    // Update editor textarea
+    const ea = document.getElementById('editor-area');
+    if(ea) ea.value = d.improved;
+
+    // Update improved score
+    const ns = document.getElementById('new-score');
+    ns.textContent = d.new_score + '%';
+    ns.style.color = d.new_score >= 70 ? '#4ade80' : d.new_score >= 50 ? '#fb923c' : '#f87171';
+
+    // Update preview status
+    document.getElementById('preview-status').textContent = '✦ AI improved version';
+
+    // Update edits badge if present
+    const eb = document.querySelector('.edits-badge');
+    if(eb) eb.textContent = d.edits_left + ' edits left';
+
+    toast('Resume improved! Check the preview →', 'ok');
+  } catch(e){
+    toast(e.message, 'err');
+  } finally {
+    btn.disabled = false; sp.classList.remove('on');
+    txt.textContent = '✨ Rewrite with AI again';
+  }
+}
+
+// ── Save Manual Edit ──────────────────────────────────────────────────────────
+async function saveEdit(){
+  const content = document.getElementById('editor-area').value.trim();
+  if(!content){ toast('Editor is empty.','err'); return; }
+
+  const btn = document.getElementById('save-btn');
+  const sp  = document.getElementById('save-spin');
+  const txt = document.getElementById('save-txt');
+  btn.disabled = true; sp.classList.add('on');
+  txt.textContent = 'Saving...';
+
+  try{
+    const r = await fetch('/api/save-resume',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({resume_id: RESUME_ID, content})
+    });
+    const d = await r.json();
+    if(!r.ok) throw new Error(d.error || 'Save failed');
+
+    document.getElementById('paper').textContent = content;
+    document.getElementById('preview-status').textContent = '✦ Manually edited version';
+
+    const eb = document.querySelector('.edits-badge');
+    if(eb) eb.textContent = d.edits_left + ' edits left';
+
+    toast('Changes saved!', 'ok');
+  } catch(e){
+    toast(e.message, 'err');
+  } finally {
+    btn.disabled = false; sp.classList.remove('on');
+    txt.textContent = '💾 Save Changes';
+  }
+}
+
+// ── Download PDF ──────────────────────────────────────────────────────────────
+async function downloadPdf(){
+  toast('Preparing your PDF...', 'info');
+  try{
+    const r = await fetch(`/api/download-pdf/${RESUME_ID}`);
+    if(r.status === 402){
+      // Not paid yet — show payment modal
+      openModal(); return;
+    }
+    if(!r.ok){
+      const d = await r.json();
+      throw new Error(d.error || 'Download failed');
+    }
+    const blob = await r.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url;
+    a.download = 'ATS_Resume.pdf';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast('PDF downloaded!', 'ok');
+  } catch(e){
+    toast(e.message, 'err');
+  }
+}
+
+// ── Payment ───────────────────────────────────────────────────────────────────
+function openModal(){ document.getElementById('overlay').classList.add('open'); }
+function closeModal(){ document.getElementById('overlay').classList.remove('open'); }
+
+async function pay(){
+  try{
+    const r = await fetch('/api/create-order',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({resume_id: RESUME_ID})
+    });
+    const o = await r.json();
+
+    if(o.dev){
+      // Dev mode — reload page with subscription active
+      closeModal();
+      toast('Dev mode — subscription activated!', 'ok');
+      setTimeout(()=> location.reload(), 1000);
+      return;
+    }
+    if(o.error) throw new Error(o.error);
+
+    const rzp = new Razorpay({
+      key: o.key, amount: o.amount, currency:'INR',
+      name:'ResumeAI', description:'Resume Fix — 30 Days Access',
+      order_id: o.order_id, theme:{color:'#c6a76d'},
+      handler: async function(resp){
+        const v = await (await fetch('/api/verify-payment',{
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(resp)
+        })).json();
+
+        if(v.success){
+          closeModal();
+          toast('Payment successful! Unlocking...', 'ok');
+          setTimeout(()=> location.reload(), 1200);
+        } else {
+          toast('Payment verification failed.', 'err');
+        }
+      },
+      modal:{ ondismiss: function(){ toast('Payment cancelled.','info'); } }
+    });
+    rzp.open();
+  } catch(e){
+    toast(e.message, 'err');
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function toast(msg, type='ok'){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className   = `toast show ${type}`;
+  setTimeout(()=> t.className='toast', 3800);
+}
+</script>
+</body>
+</html>
