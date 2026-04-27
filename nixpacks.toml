@@ -1,17 +1,22 @@
 [phases.setup]
 nixPkgs = [
+  "python312",
+  "gcc",
   "cairo",
   "pango",
   "gdk-pixbuf",
   "glib",
   "libffi",
-  "gcc",
   "pkg-config",
   "dejavu_fonts"
 ]
 
 [phases.install]
-cmds = ["pip install -r requirements.txt"]
+cmds = [
+  "python -m venv --copies /opt/venv",
+  ". /opt/venv/bin/activate",
+  "pip install -r requirements.txt"
+]
 
 [start]
 cmd = "gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
