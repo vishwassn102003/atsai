@@ -20,7 +20,7 @@ class Config:
     RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', '')
 
     # Pricing & subscription
-    PRICE_PAISE           = int(os.environ.get('PRICE_PAISE', 2900))  # ₹29
+    PRICE_PAISE = int(float(os.environ.get('PRICE_PAISE', 2900))) # ₹29
     SUBSCRIPTION_DAYS     = 30
     SUBSCRIPTION_EDITS    = 25
 
