@@ -5,6 +5,7 @@ from routes.auth import auth_bp
 from routes.main import main_bp
 from routes.api import api_bp
 import os
+import sys
 
 def create_app():
     app = Flask(__name__)
@@ -22,7 +23,11 @@ def create_app():
 
     return app
 
-app = create_app()
+try:
+    app = create_app()
+except Exception as e:
+    print(f"STARTUP ERROR: {e}", file=sys.stderr)
+    raise
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
