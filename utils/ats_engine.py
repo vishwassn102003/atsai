@@ -7,7 +7,8 @@ def _client(api_key: str) -> OpenAI:
 
 
 def calculate_ats_score(resume_text: str, job_desc: str, mode: str,
-                         model: str, api_key: str) -> dict:
+                        model: str, api_key: str) -> dict:
+
     if mode == 'with_jd':
         system = "You are an expert ATS evaluator. Analyse the resume against the job description. Return ONLY valid JSON."
         user_msg = f"""Evaluate this resume against the job description.
@@ -66,17 +67,17 @@ Return ONLY this JSON (no markdown, no backticks):
 
     client = _client(api_key)
 
-    response = client.responses.create(
+    response = client.chat.completions.create(
         model=model,
-        input=[
+        messages=[
             {"role": "system", "content": system},
             {"role": "user", "content": user_msg}
         ],
         temperature=0.3,
-        max_output_tokens=800
+        max_tokens=800
     )
 
-    raw = response.output[0].content[0].text.strip()
+    raw = response.choices[0].message.content.strip()
     raw = raw.replace('```json', '').replace('```', '').strip()
 
     data = json.loads(raw)
@@ -84,11 +85,13 @@ Return ONLY this JSON (no markdown, no backticks):
     data['breakdown'] = data.get('breakdown', {})
     data['suggestions'] = data.get('suggestions', [])
     data['missing_keywords'] = data.get('missing_keywords', [])
+
     return data
 
 
 def improve_resume(resume_text: str, job_desc: str, mode: str,
-                   model: str, api_key: str) -> dict:
+                  model: str, api_key: str) -> dict:
+
     if mode == 'with_jd' and job_desc:
         prompt = f"""You are an expert resume writer and ATS optimisation specialist.
 
@@ -134,18 +137,19 @@ Return ONLY this JSON (no markdown):
 
     client = _client(api_key)
 
-    response = client.responses.create(
+    response = client.chat.completions.create(
         model=model,
-        input=[
+        messages=[
             {"role": "user", "content": prompt}
         ],
         temperature=0.4,
-        max_output_tokens=2000
+        max_tokens=2000
     )
 
-    raw = response.output[0].content[0].text.strip()
+    raw = response.choices[0].message.content.strip()
     raw = raw.replace('```json', '').replace('```', '').strip()
 
     data = json.loads(raw)
     data['new_score'] = max(0, min(100, int(data.get('new_score', 80))))
+
     return data
