@@ -4,6 +4,7 @@ import os
 print("Starting app.py...", flush=True)
 
 from flask import Flask
+from werkzeug.middleware.proxy_fix import ProxyFix
 print("Flask imported", flush=True)
 
 from extensions import db, login_manager
@@ -15,6 +16,7 @@ print("Config imported", flush=True)
 def create_app():
     print("Creating app...", flush=True)
     app = Flask(__name__)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1)
     app.config.from_object(Config)
 
     db.init_app(app)
