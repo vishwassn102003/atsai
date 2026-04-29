@@ -7,6 +7,14 @@ from utils.pdf_generator import generate_pdf
 import io, hmac, hashlib
 from datetime import datetime
 
+# Safe razorpay import — avoids crash if pkg_resources is missing
+try:
+    import razorpay as razorpay_lib
+    RAZORPAY_AVAILABLE = True
+except Exception:
+    razorpay_lib = None
+    RAZORPAY_AVAILABLE = False
+
 api_bp = Blueprint('api', __name__)
 
 
@@ -150,14 +158,13 @@ def create_order():
     key_secret = current_app.config.get('RAZORPAY_KEY_SECRET')
     resume_id  = (request.get_json() or {}).get('resume_id')
 
-    # Dev mode — no Razorpay keys configured
-    if not key_id or not key_secret:
+    # Dev mode — no Razorpay keys configured, or razorpay unavailable
+    if not key_id or not key_secret or not RAZORPAY_AVAILABLE:
         _activate_dev_subscription(resume_id)
         return jsonify({'dev': True})
 
     try:
-        import razorpay
-        client = razorpay.Client(auth=(key_id, key_secret))
+        client = razorpay_lib.Client(auth=(key_id, key_secret))
         order  = client.order.create({
             'amount': current_app.config['PRICE_PAISE'],
             'currency': 'INR',
