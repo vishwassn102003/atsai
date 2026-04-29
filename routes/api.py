@@ -35,8 +35,8 @@ def check_ats():
     try:
         result = calculate_ats_score(
             resume_text=resume_text, job_desc=jd, mode=mode,
-            model=current_app.config['OPENAI_MODEL'],
-            api_key=current_app.config['OPENAI_API_KEY']
+            model=current_app.config['GEMINI_MODEL'],
+            api_key=current_app.config['GEMINI_API_KEY']
         )
     except Exception as e:
         return jsonify({'error': f'AI error: {str(e)}'}), 500
@@ -75,8 +75,8 @@ def improve_resume_api():
         improved = improve_resume(
             resume_text=resume.improved_text or resume.original_text,
             job_desc=resume.job_description, mode=resume.mode,
-            model=current_app.config['OPENAI_MODEL'],
-            api_key=current_app.config['OPENAI_API_KEY']
+            model=current_app.config['GEMINI_MODEL'],
+            api_key=current_app.config['GEMINI_API_KEY']
         )
     except Exception as e:
         return jsonify({'error': f'AI error: {str(e)}'}), 500
