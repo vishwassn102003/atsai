@@ -7,9 +7,9 @@ class Config:
     SQLALCHEMY_DATABASE_URI        = os.environ.get('DATABASE_URL', 'sqlite:///atsai.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # OpenAI
-    OPENAI_API_KEY  = os.environ.get('OPENAI_API_KEY', '')
-    OPENAI_MODEL    = os.environ.get('OPENAI_MODEL', 'gpt-4o-mini')
+    # gemini
+    GEMINI_API_KEY  = os.environ.get('GEMINI_API_KEY', '')
+    GEMINI_MODEL    = os.environ.get('GEMINI_MODEL', 'gemini-1.5-flash')
 
     # Google OAuth
     GOOGLE_CLIENT_ID     = os.environ.get('GOOGLE_CLIENT_ID', '')
